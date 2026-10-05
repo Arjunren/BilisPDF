@@ -1,0 +1,89 @@
+<Window x:Class="EasyPDF.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="EasyPDF" Width="920" Height="680" MinWidth="720" MinHeight="560"
+        WindowStartupLocation="CenterScreen" Background="#F6F7FB"
+        AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="0" Background="#1D1D2F" Padding="28,22">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Left">
+          <TextBlock Text="EasyPDF" Foreground="White" FontSize="29" FontWeight="SemiBold" />
+          <TextBlock Text="Private, offline PDF tools for Windows" Foreground="#C8C8DC" FontSize="14" />
+        </StackPanel>
+        <TextBlock DockPanel.Dock="Right" Text="by Arjunren Von" Foreground="#C8C8DC"
+                   VerticalAlignment="Center" FontSize="13" />
+      </DockPanel>
+    </Border>
+
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="28">
+        <Border x:Name="DropZone" BorderBrush="#8A8AA8" BorderThickness="2" CornerRadius="12"
+                Background="White" Padding="28" MinHeight="150">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Drop files here" FontSize="23" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <TextBlock Text="PDF, DOCX, XLSX, PPTX, TXT, RTF, HTML, PNG, JPEG, BMP, TIFF, or WebP"
+                       Foreground="#5F5F72" Margin="0,8,0,14" TextWrapping="Wrap" TextAlignment="Center" />
+            <Button Content="Choose files" Click="ChooseFiles_Click" AutomationProperties.Name="Choose files" />
+          </StackPanel>
+        </Border>
+
+        <Grid Margin="0,22,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="2*" />
+          </Grid.ColumnDefinitions>
+
+          <GroupBox Header="Selected files" Padding="12" Margin="0,0,12,0">
+            <DockPanel>
+              <Button DockPanel.Dock="Bottom" Content="Clear" Click="Clear_Click" HorizontalAlignment="Left" Margin="0,10,0,0" />
+              <ListBox x:Name="FilesList" MinHeight="160" AutomationProperties.Name="Selected files" />
+            </DockPanel>
+          </GroupBox>
+
+          <GroupBox Grid.Column="1" Header="Action" Padding="12">
+            <StackPanel>
+              <TextBlock Text="Available operation" />
+              <ComboBox x:Name="ActionBox" Margin="0,6,0,12" MinHeight="32"
+                        DisplayMemberPath="Label" SelectedValuePath="Id"
+                        AutomationProperties.Name="Available operation" />
+              <TextBlock Text="Pages (when applicable)" />
+              <TextBox x:Name="PagesBox" Text="all" Margin="0,6,0,12" Padding="6"
+                       ToolTip="Examples: all, 1-5, 1,3,8-12" />
+              <TextBlock Text="Rotation" />
+              <ComboBox x:Name="DegreesBox" SelectedIndex="0" Margin="0,6,0,14">
+                <ComboBoxItem Content="90° clockwise" Tag="90" />
+                <ComboBoxItem Content="90° counter-clockwise" Tag="-90" />
+                <ComboBoxItem Content="180°" Tag="180" />
+              </ComboBox>
+              <Button x:Name="RunButton" Content="Run" Click="Run_Click" Background="{StaticResource AccentBrush}"
+                      Foreground="White" FontWeight="SemiBold" AutomationProperties.Name="Run selected operation" />
+              <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click" IsEnabled="False" />
+            </StackPanel>
+          </GroupBox>
+        </Grid>
+
+        <GroupBox Header="Recent operation" Margin="0,20,0,0" Padding="12">
+          <StackPanel>
+            <TextBlock x:Name="StatusText" Text="Ready. Operation history is disabled by default." TextWrapping="Wrap" />
+            <Button x:Name="OpenFolderButton" Content="Open output folder" Click="OpenFolder_Click"
+                    Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,10,0,0" />
+          </StackPanel>
+        </GroupBox>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="2" BorderBrush="#DDDDE8" BorderThickness="0,1,0,0" Padding="28,13" Background="White">
+      <DockPanel>
+        <TextBlock Text="No telemetry • No uploads • No account" Foreground="#555568" />
+        <TextBlock DockPanel.Dock="Right" Text="MIT License • Terms accepted during installation" Foreground="#555568" />
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

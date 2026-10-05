@@ -1,0 +1,99 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="EasyPDF"
+           Manufacturer="Arjunren Von"
+           Version="0.1.0"
+           UpgradeCode="F4B2701C-36AC-49EC-A61A-05A45B7BF496"
+           Scope="perMachine">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of EasyPDF is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="EasyPDF" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="EasyPDF" />
+    </StandardDirectory>
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Component Id="Shortcuts" Directory="ApplicationProgramsFolder" Guid="D2C5EC96-1354-4517-8703-53943B59046A">
+      <Shortcut Id="StartMenuShortcut" Name="EasyPDF" Description="Private, offline PDF tools"
+                Target="[INSTALLFOLDER]EasyPDF.Desktop.exe" WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Arjunren\EasyPDF" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="0E433734-3C0C-4FE3-98A0-80C26AEF72EA">
+      <Shortcut Id="DesktopShortcutId" Name="EasyPDF" Description="Private, offline PDF tools"
+                Target="[INSTALLFOLDER]EasyPDF.Desktop.exe" WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\Arjunren\EasyPDF" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="ExplorerCommandStore" Directory="INSTALLFOLDER" Guid="5FA118E5-E844-4B78-A7D3-F9073D13DB85">
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Convert" Value="Convert to PDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Convert\command" Value="&quot;[INSTALLFOLDER]EasyPDF.Shell.exe&quot; convert-to-pdf &quot;%1&quot;" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Merge" Value="Merge PDFs" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Merge\command" Value="&quot;[INSTALLFOLDER]EasyPDF.Shell.exe&quot; merge &quot;%1&quot;" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Split" Value="Split / extract pages" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Split\command" Value="&quot;[INSTALLFOLDER]EasyPDF.Shell.exe&quot; split &quot;%1&quot;" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Rotate" Value="Rotate pages" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Rotate\command" Value="&quot;[INSTALLFOLDER]EasyPDF.Shell.exe&quot; rotate &quot;%1&quot;" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Images" Value="Combine images to PDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\EasyPDF.Images\command" Value="&quot;[INSTALLFOLDER]EasyPDF.Shell.exe&quot; images-to-pdf &quot;%1&quot;" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Arjunren\EasyPDF" Name="ExplorerCommandStore" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="PdfExplorerMenu" Directory="INSTALLFOLDER" Guid="9C1224EB-1DFB-43D7-8185-80DCA9D271A5">
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pdf\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pdf\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Merge;EasyPDF.Split;EasyPDF.Rotate" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pdf\shell\EasyPDF" Name="MultiSelectModel" Value="Player" Type="string" KeyPath="yes" />
+    </Component>
+
+    <Component Id="DocumentExplorerMenus" Directory="INSTALLFOLDER" Guid="9D73694A-111A-4E7F-9F07-705945B437CB">
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.docx\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.docx\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.xlsx\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.xlsx\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pptx\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pptx\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" KeyPath="yes" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.txt\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.txt\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.rtf\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.rtf\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.html\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.html\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.htm\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.htm\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Convert" Type="string" />
+    </Component>
+
+    <Component Id="ImageExplorerMenus" Directory="INSTALLFOLDER" Guid="E9AE6015-B820-4C22-8AA4-32AD4B265664">
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.png\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.png\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.jpg\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.jpg\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.jpeg\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.jpeg\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" KeyPath="yes" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.bmp\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.bmp\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.tif\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.tif\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.tiff\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.tiff\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.webp\shell\EasyPDF" Name="MUIVerb" Value="EasyPDF" Type="string" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.webp\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
+    </Component>
+
+    <Feature Id="MainFeature" Title="EasyPDF" Level="1">
+      <Files Include="$(PayloadDir)\**" Directory="INSTALLFOLDER" />
+      <ComponentRef Id="Shortcuts" />
+      <ComponentRef Id="DesktopShortcut" />
+      <ComponentRef Id="ExplorerCommandStore" />
+      <ComponentRef Id="PdfExplorerMenu" />
+      <ComponentRef Id="DocumentExplorerMenus" />
+      <ComponentRef Id="ImageExplorerMenus" />
+    </Feature>
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+  </Package>
+</Wix>
