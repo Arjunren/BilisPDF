@@ -46,13 +46,6 @@
           "System.Security.Cryptography.Pkcs": "8.0.1"
         }
       }
-    },
-    "net10.0-windows7.0/win-x64": {
-      "System.Security.Cryptography.Pkcs": {
-        "type": "Transitive",
-        "resolved": "8.0.1",
-        "contentHash": "CoCRHFym33aUSf/NtWSVSZa99dkd0Hm7OCZUxORBjRB16LNhIEOf8THPqzIYlvKM0nNDAPTRBa1FxEECrgaxxA=="
-      }
     }
   }
 }
