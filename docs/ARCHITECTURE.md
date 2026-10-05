@@ -2,7 +2,7 @@
 
 ## Decision summary
 
-EasyPDF targets .NET 10 LTS and Windows 10/11 x64. WPF is used for a small, fast desktop UI; processing stays in reusable libraries and the CLI. A shell entry launches the app/worker and returns immediately. No heavy dependency is loaded in Explorer.
+EasyPDF targets .NET 10 LTS and Windows 10/11 x64. WPF is used for a small, fast desktop UI; processing stays in reusable libraries and out-of-process workers. A native shell entry launches the background worker and returns immediately. No document parser, Office automation object, or .NET runtime is loaded in Explorer.
 
 ```text
 Explorer / WPF / CLI
@@ -12,7 +12,7 @@ Explorer / WPF / CLI
     |                         |
     v                         v
 EasyPDF.Converters       EasyPDF.Pdf
- (LibreOffice process)   (PDFsharp)
+ (local office engine)   (PDFsharp)
     \                         /
      v                       v
        atomic local outputs
@@ -24,18 +24,18 @@ The source is split by responsibility rather than feature microservices. `Core` 
 
 ## Explorer design
 
-The MSI registers verbs only for supported extensions under `SystemFileAssociations`; it does not change default applications. The tiny `EasyPDF.Shell.exe` validates the verb and starts `EasyPDF.Desktop.exe`, which owns all UI and processing. Uninstall removes every registration.
+The MSI registers fallback verbs only for supported extensions under `SystemFileAssociations`; it does not change default applications. `EasyPDF.Shell.exe` validates the verb and performs document conversion directly in a separate process. Operations that need interactive options still open `EasyPDF.Desktop.exe`. Uninstall removes every classic registration.
 
-Windows 11's first-tier context menu requires a signed package identity plus a native `IExplorerCommand` COM server. Production releases should add the documented sparse-package shell component, keep the same out-of-process dispatcher boundary, and sign the package in CI. Until then the MSI commands are available on Windows 10 and in Windows 11's classic **Show more options** menu. This limitation is explicit so unsigned development builds do not pretend to provide a modern registration they cannot install safely.
+Windows 11's first-tier context menu is implemented by `EasyPDF.ShellExtension.dll`, a native `IExplorerCommand` COM server registered through a sparse MSIX identity package. Its menu-building methods only validate selection metadata; `Invoke` starts `EasyPDF.Shell.exe` and returns. Production releases must sign and register the sparse package. The classic **Show more options** commands remain as a compatibility fallback.
 
 ## Phase 1 implementation sequence
 
 1. Core validation, routing, naming, cancellation contracts, and tests.
 2. PDF merge/extract/split/rotate and images-to-PDF.
-3. Isolated LibreOffice conversion for DOCX/XLSX/PPTX.
+3. Local LibreOffice conversion with a guarded Microsoft Office fallback.
 4. CLI composition and exit-code contract.
 5. WPF drag-and-drop UI and settings.
-6. Shell dispatcher and MSI with mandatory terms acceptance.
+6. Background shell worker, native Windows 11 command, and MSI with mandatory terms acceptance.
 7. CI, release artifacts, dependency review, and signing documentation.
 
 ## Technical risks

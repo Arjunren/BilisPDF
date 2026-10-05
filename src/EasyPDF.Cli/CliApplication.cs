@@ -26,7 +26,7 @@ public static class CliApplication
                     {
                         var input = parsed.RequireSingleInput();
                         var output = parsed.Output ?? OutputPathResolver.BesideSource(input, string.Empty);
-                        result = await new LibreOfficeDocumentConverter().ConvertToPdfAsync(input, output, cancellationToken);
+                        result = await new LocalDocumentConverter().ConvertToPdfAsync(input, output, cancellationToken);
                         break;
                     }
                 case "merge":

@@ -4,17 +4,29 @@ public static class LibreOfficeLocator
 {
     public static string Locate()
     {
+        if (TryLocate(out var executable))
+        {
+            return executable;
+        }
+
+        throw new FileNotFoundException(
+            "LibreOffice was not found. Install LibreOffice locally or set EASYPDF_LIBREOFFICE_PATH to soffice.exe.");
+    }
+
+    public static bool TryLocate(out string executable)
+    {
         var configured = Environment.GetEnvironmentVariable("EASYPDF_LIBREOFFICE_PATH");
         foreach (var candidate in GetCandidates(configured))
         {
             if (File.Exists(candidate))
             {
-                return Path.GetFullPath(candidate);
+                executable = Path.GetFullPath(candidate);
+                return true;
             }
         }
 
-        throw new FileNotFoundException(
-            "LibreOffice was not found. Install LibreOffice locally or set EASYPDF_LIBREOFFICE_PATH to soffice.exe.");
+        executable = string.Empty;
+        return false;
     }
 
     private static IEnumerable<string> GetCandidates(string? configured)

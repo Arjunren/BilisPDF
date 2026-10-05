@@ -26,6 +26,10 @@ foreach ($project in $projects) {
     if ($LASTEXITCODE -ne 0) { throw "Publishing $project failed." }
 }
 
+$shellPackage = Join-Path $PSScriptRoot "bin\x64\$Configuration\EasyPDF.ShellPackage.msix"
+& (Join-Path $PSScriptRoot 'modern-shell\build.ps1') -Configuration $Configuration -ExternalPayload $payloadDirectory -PackageOutput $shellPackage
+if ($LASTEXITCODE -ne 0) { throw 'Building the Windows 11 Explorer package failed.' }
+
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination $payloadDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'TERMS.md') -Destination $payloadDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'THIRD-PARTY-NOTICES.md') -Destination $payloadDirectory

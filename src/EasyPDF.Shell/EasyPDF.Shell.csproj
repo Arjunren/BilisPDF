@@ -2,6 +2,11 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>EasyPDF.Shell</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EasyPDF.Core\EasyPDF.Core.csproj" />
+    <ProjectReference Include="..\EasyPDF.Converters\EasyPDF.Converters.csproj" />
+  </ItemGroup>
 </Project>

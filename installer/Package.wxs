@@ -2,7 +2,7 @@
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="EasyPDF"
            Manufacturer="Arjunren Von"
-           Version="0.1.0"
+           Version="0.2.0"
            UpgradeCode="F4B2701C-36AC-49EC-A61A-05A45B7BF496"
            Scope="perMachine">
     <MajorUpgrade DowngradeErrorMessage="A newer version of EasyPDF is already installed." />

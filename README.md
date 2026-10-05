@@ -4,11 +4,12 @@ EasyPDF is a free, open-source, offline-first Windows utility for common PDF tas
 
 Copyright and project credit: **Arjunren Von** (`Arjunren`). Licensed under the MIT License.
 
-> Status: Phase 1 foundation. The CLI, desktop drag-and-drop shell, guarded local LibreOffice conversion, PDF merge/split/extract/rotate, images-to-PDF, tests, and MSI authoring are implemented. The Windows 11 first-tier signed shell package remains a release-engineering item; the MSI installs lightweight file-type-specific classic Explorer commands that are available directly on Windows 10 and under **Show more options** on Windows 11.
+> Status: Phase 1 foundation. The CLI, desktop drag-and-drop shell, guarded local document conversion, PDF merge/split/extract/rotate, images-to-PDF, tests, MSI authoring, and native Windows 11 Explorer command are implemented. Production releases must code-sign and register the included sparse shell package; development registration is supported on machines with Developer Mode enabled.
 
 ## Features
 
-- Convert DOCX, XLSX, and PPTX to PDF through a local LibreOffice installation.
+- Right-click a supported document and choose **Convert to PDF with EasyPDF** in the Windows 11 menu; conversion runs in the background without opening the desktop app.
+- Convert DOCX, XLSX, and PPTX through local LibreOffice, or through an already-installed Microsoft Office application when LibreOffice is unavailable.
 - Merge PDFs, extract/split page ranges, and rotate pages.
 - Combine PNG, JPEG, BMP, TIFF, and WebP images into a PDF.
 - Use the same processing engine from the CLI and desktop app.
@@ -20,7 +21,7 @@ Copyright and project credit: **Arjunren Von** (`Arjunren`). Licensed under the 
 
 - Windows 10/11 x64.
 - A self-contained release build, or the .NET 10 Desktop Runtime for framework-dependent builds.
-- LibreOffice for DOCX/XLSX/PPTX conversion. EasyPDF locates the normal 64-bit or 32-bit installation, or uses `EASYPDF_LIBREOFFICE_PATH` when explicitly configured.
+- LibreOffice or Microsoft Office for DOCX/XLSX/PPTX conversion. EasyPDF prefers LibreOffice, then falls back to an already-installed Word, Excel, or PowerPoint application. Conversion remains local in either case.
 
 ## CLI
 
@@ -51,15 +52,24 @@ Publish the app payload before building the MSI:
 
 The installer displays the EasyPDF terms and requires acceptance before installation. It registers only EasyPDF verbs; it does not take over the system PDF association.
 
+For a local Windows 11 shell-extension test on a machine with Developer Mode enabled:
+
+```powershell
+./installer/modern-shell/Register-DevelopmentPackage.ps1 -ExternalLocation ./installer/payload
+```
+
+The modern menu uses a sparse package because Windows 11 requires package identity for `IExplorerCommand`. Public installers must sign that package with a trusted code-signing certificate. Set `EASYPDF_SIGNING_CERT_PATH` and `EASYPDF_SIGNING_CERT_PASSWORD` only in the build environment; certificate files and passwords are ignored by Git and must never be committed.
+
 ## Architecture
 
 - `EasyPDF.Core`: input models, file type registry, validation, page ranges, and safe output naming.
 - `EasyPDF.Pdf`: PDFsharp-backed PDF and image operations with atomic output.
-- `EasyPDF.Converters`: isolated, time-bounded LibreOffice worker invocation.
+- `EasyPDF.Converters`: guarded local LibreOffice conversion plus an invisible, macro-disabled Microsoft Office fallback.
 - `EasyPDF.Infrastructure`: privacy-preserving settings and rotating diagnostics.
 - `EasyPDF.Cli`: independent command-line worker.
 - `EasyPDF.Desktop`: accessible WPF drag-and-drop UI.
-- `EasyPDF.Shell`: tiny Explorer-to-desktop dispatcher; it never processes documents inside Explorer.
+- `EasyPDF.Shell`: out-of-process Explorer worker; direct conversion runs here and never inside Explorer.
+- `EasyPDF.ShellExtension`: native `IExplorerCommand` COM server for Windows 11's first-tier context menu.
 - `installer`: WiX MSI authoring, Explorer registration, shortcuts, terms, and uninstall cleanup.
 
 See [Architecture](docs/ARCHITECTURE.md), [Security model](docs/SECURITY-MODEL.md), [dependency evaluation](docs/DEPENDENCIES.md), and [release process](docs/RELEASING.md).

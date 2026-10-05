@@ -123,7 +123,7 @@ public partial class MainWindow : Window
             var token = _operationCancellation.Token;
             _lastOutput = action switch
             {
-                "convert-to-pdf" => await new LibreOfficeDocumentConverter().ConvertToPdfAsync(
+                "convert-to-pdf" => await new LocalDocumentConverter().ConvertToPdfAsync(
                     _files[0], OutputPathResolver.BesideSource(_files[0], string.Empty), token),
                 "merge" => await pdf.MergeAsync(
                     _files,
