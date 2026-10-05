@@ -30,9 +30,15 @@ $shellPackage = Join-Path $PSScriptRoot "bin\x64\$Configuration\EasyPDF.ShellPac
 & (Join-Path $PSScriptRoot 'modern-shell\build.ps1') -Configuration $Configuration -ExternalPayload $payloadDirectory -PackageOutput $shellPackage
 if ($LASTEXITCODE -ne 0) { throw 'Building the Windows 11 Explorer package failed.' }
 
+$registerModernShell = 'false'
+if ($env:EASYPDF_SIGNING_CERT_PATH) {
+    Copy-Item -LiteralPath $shellPackage -Destination $payloadDirectory
+    $registerModernShell = 'true'
+}
+
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination $payloadDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'TERMS.md') -Destination $payloadDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'THIRD-PARTY-NOTICES.md') -Destination $payloadDirectory
 
-dotnet build (Join-Path $PSScriptRoot 'EasyPDF.Installer.wixproj') -c $Configuration
+dotnet build (Join-Path $PSScriptRoot 'EasyPDF.Installer.wixproj') -c $Configuration -p:RegisterModernShell=$registerModernShell
 if ($LASTEXITCODE -ne 0) { throw 'Building the installer failed.' }

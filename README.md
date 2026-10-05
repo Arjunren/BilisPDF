@@ -58,7 +58,7 @@ For a local Windows 11 shell-extension test on a machine with Developer Mode ena
 ./installer/modern-shell/Register-DevelopmentPackage.ps1 -ExternalLocation ./installer/payload
 ```
 
-The modern menu uses a sparse package because Windows 11 requires package identity for `IExplorerCommand`. Public installers must sign that package with a trusted code-signing certificate. Set `EASYPDF_SIGNING_CERT_PATH` and `EASYPDF_SIGNING_CERT_PASSWORD` only in the build environment; certificate files and passwords are ignored by Git and must never be committed.
+The modern menu uses a sparse package because Windows 11 requires package identity for `IExplorerCommand`. When `EASYPDF_SIGNING_CERT_PATH` is set, the build signs the shell package and enables the MSI install/uninstall registration actions automatically. Set the certificate path and `EASYPDF_SIGNING_CERT_PASSWORD` only in the build environment; certificate files and passwords are ignored by Git and must never be committed. Unsigned builds deliberately omit automatic package registration.
 
 ## Architecture
 

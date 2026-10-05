@@ -4,7 +4,8 @@
     <OutputType>Package</OutputType>
     <Platform>x64</Platform>
     <Cultures>en-US</Cultures>
-    <DefineConstants>PayloadDir=$(MSBuildThisFileDirectory)payload</DefineConstants>
+    <RegisterModernShell Condition="'$(RegisterModernShell)' == ''">false</RegisterModernShell>
+    <DefineConstants>PayloadDir=$(MSBuildThisFileDirectory)payload;RegisterModernShell=$(RegisterModernShell)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" />

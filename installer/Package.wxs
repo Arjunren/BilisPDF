@@ -83,6 +83,25 @@
       <RegistryValue Root="HKLM" Key="Software\Classes\SystemFileAssociations\.webp\shell\EasyPDF" Name="SubCommands" Value="EasyPDF.Images" Type="string" />
     </Component>
 
+    <?if $(var.RegisterModernShell) = true ?>
+    <CustomAction Id="RegisterModernShell"
+                  Directory="INSTALLFOLDER"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="check"
+                  ExeCommand="&quot;[SystemFolder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command &quot;&amp; { Add-AppxPackage -Path '[INSTALLFOLDER]EasyPDF.ShellPackage.msix' -ExternalLocation '[INSTALLFOLDER]' }&quot;" />
+    <CustomAction Id="UnregisterModernShell"
+                  Directory="INSTALLFOLDER"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore"
+                  ExeCommand="&quot;[SystemFolder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command &quot;&amp; { Get-AppxPackage -Name 'Arjunren.EasyPDF.Shell' -ErrorAction SilentlyContinue | Remove-AppxPackage }&quot;" />
+    <InstallExecuteSequence>
+      <Custom Action="RegisterModernShell" After="InstallFiles" Condition="NOT Installed OR REINSTALL" />
+      <Custom Action="UnregisterModernShell" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+    </InstallExecuteSequence>
+    <?endif?>
+
     <Feature Id="MainFeature" Title="EasyPDF" Level="1">
       <Files Include="$(PayloadDir)\**" Directory="INSTALLFOLDER" />
       <ComponentRef Id="Shortcuts" />
