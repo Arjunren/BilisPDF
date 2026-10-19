@@ -18,20 +18,26 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Loaded += async (_, _) => await HandleStartupArgumentsAsync();
+        SetFiles([]);
+        Loaded += (_, _) => HandleStartupArguments();
     }
 
     private void Window_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Effects = _operationCancellation is null && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     private void Window_Drop(object sender, DragEventArgs e)
     {
-        if (e.Data.GetData(DataFormats.FileDrop) is string[] paths)
+        if (_operationCancellation is null && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
         {
-            SetFiles(ExpandPaths(paths));
+            try { SetFiles(_files.Concat(ExpandPaths(paths)).ToArray()); }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+            {
+                StatusHeading.Text = "Could not add these files";
+                StatusText.Text = exception.Message;
+            }
         }
     }
 
@@ -45,7 +51,7 @@ public partial class MainWindow : Window
         };
         if (dialog.ShowDialog(this) == true)
         {
-            SetFiles(dialog.FileNames);
+            SetFiles(_files.Concat(dialog.FileNames).ToArray());
         }
     }
 
@@ -55,6 +61,65 @@ public partial class MainWindow : Window
 
     private void Cancel_Click(object sender, RoutedEventArgs e) => _operationCancellation?.Cancel();
 
+    private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_operationCancellation is not null)
+        {
+            e.Cancel = true;
+            _operationCancellation.Cancel();
+            StatusText.Text = "Cancelling safely. Close the window once the operation has stopped.";
+        }
+    }
+
+    private void RemoveFile_Click(object sender, RoutedEventArgs e)
+    {
+        if (FilesList.SelectedIndex is var index && index >= 0)
+        {
+            SetFiles(_files.Where((_, position) => position != index).ToArray());
+        }
+    }
+
+    private void MoveFile_Click(object sender, RoutedEventArgs e)
+    {
+        var index = FilesList.SelectedIndex;
+        var destination = index + int.Parse((string)((Button)sender).Tag, System.Globalization.CultureInfo.InvariantCulture);
+        if (index < 0 || destination < 0 || destination >= _files.Count) { return; }
+        (_files[index], _files[destination]) = (_files[destination], _files[index]);
+        RefreshFileList();
+        FilesList.SelectedIndex = destination;
+    }
+
+    private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (MoveUpButton is null) { return; }
+        var index = FilesList.SelectedIndex;
+        MoveUpButton.IsEnabled = index > 0;
+        MoveDownButton.IsEnabled = index >= 0 && index < _files.Count - 1;
+        RemoveButton.IsEnabled = index >= 0;
+    }
+
+    private void ActionBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateActionControls();
+
+    private void UpdateActionControls()
+    {
+        if (PagesPanel is null) { return; }
+        var action = ActionBox.SelectedValue as string;
+        PagesPanel.Visibility = action is "split" or "extract-pages" or "rotate" ? Visibility.Visible : Visibility.Collapsed;
+        RotationPanel.Visibility = action == "rotate" ? Visibility.Visible : Visibility.Collapsed;
+        ActionBox.IsEnabled = ActionBox.Items.Count > 0;
+        RunButton.IsEnabled = action is not null && _operationCancellation is null;
+        RunButton.Content = action is null ? "Create PDF" : LabelFor(action);
+        ActionHint.Text = action switch
+        {
+            "convert-to-pdf" => "Create a PDF from your document. Office files need LibreOffice or Microsoft Office.",
+            "merge" => "Combine all selected PDFs into one, in the order shown.",
+            "split" or "extract-pages" => "Save the selected pages as a new PDF. Your original stays unchanged.",
+            "rotate" => "Turn the selected pages and save a new copy.",
+            "images-to-pdf" => "Create one PDF, with an image on each page in the order shown.",
+            _ => "Add a document, PDFs, or images to see available operations."
+        };
+    }
+
     private void OpenFolder_Click(object sender, RoutedEventArgs e)
     {
         if (_lastOutput is null)
@@ -62,43 +127,59 @@ public partial class MainWindow : Window
             return;
         }
 
-        Process.Start(new ProcessStartInfo
+        try
         {
-            FileName = "explorer.exe",
-            UseShellExecute = false,
-            ArgumentList = { "/select,", _lastOutput }
-        });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                UseShellExecute = false,
+                ArgumentList = { "/select,", _lastOutput }
+            });
+        }
+        catch (System.ComponentModel.Win32Exception exception) { StatusText.Text = exception.Message; }
     }
 
     private void SetFiles(IEnumerable<string> paths)
     {
+        var selectedAction = ActionBox.SelectedValue;
+        var candidates = paths.Select(Path.GetFullPath).Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase).Take(101).ToArray();
         _files.Clear();
-        _files.AddRange(paths.Select(Path.GetFullPath).Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase).Take(100));
-        FilesList.ItemsSource = null;
-        FilesList.ItemsSource = _files.Select(path => Path.GetFileName(path)).ToArray();
+        _files.AddRange(candidates.Take(100));
+        RefreshFileList();
+        _lastOutput = null;
+        OpenFolderButton.Visibility = Visibility.Collapsed;
+        EmptyFilesHint.Visibility = _files.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        FileCountText.Text = $"{_files.Count} {(_files.Count == 1 ? "file" : "files")}";
+        ClearButton.IsEnabled = _files.Count > 0;
 
         var actions = SupportedFiles.GetValidActions(_files)
             .Select(id => new ActionItem(id, LabelFor(id)))
             .ToArray();
         ActionBox.ItemsSource = actions;
         ActionBox.SelectedIndex = actions.Length > 0 ? 0 : -1;
+        if (actions.Any(item => item.Id == selectedAction as string)) { ActionBox.SelectedValue = selectedAction; }
+        UpdateActionControls();
+        StatusHeading.Text = _files.Count == 0 ? "Ready when you are" : actions.Length > 0 ? "Ready to create" : "Check your selection";
         StatusText.Text = actions.Length > 0
-            ? $"{_files.Count} file(s) selected."
-            : _files.Count == 0 ? "Ready. Operation history is disabled by default." : "This combination of files has no supported action.";
+            ? $"{_files.Count} file(s) ready. Choose an operation on the right."
+            : _files.Count == 0 ? "Add a document, a PDF, or a few images to begin." : "Use one document, one or more PDFs, or images together. Remove other file types to continue.";
+        if (candidates.Length > 100) { StatusText.Text += " Only the first 100 files were added."; }
     }
 
-    private async Task HandleStartupArgumentsAsync()
+    private void RefreshFileList()
+    {
+        FilesList.ItemsSource = _files.Select(path => new FileItem(Path.GetFileName(path), Path.GetDirectoryName(path)!, Path.GetExtension(path).TrimStart('.').ToUpperInvariant(), path)).ToArray();
+        FilesList_SelectionChanged(FilesList, null!);
+    }
+
+    private void HandleStartupArguments()
     {
         var arguments = App.StartupArguments;
         if (arguments.Length >= 3 && arguments[0] == "--action")
         {
             var action = arguments[1];
             SetFiles(arguments[2..]);
-            ActionBox.SelectedValue = action;
-            if (ActionBox.SelectedItem is not null && action is not "open")
-            {
-                await RunSelectedActionAsync();
-            }
+            if (action != "open") { ActionBox.SelectedValue = action; }
         }
     }
 
@@ -110,12 +191,14 @@ public partial class MainWindow : Window
             return;
         }
 
-        _operationCancellation?.Dispose();
+        if (_operationCancellation is not null) { return; }
         _operationCancellation = new CancellationTokenSource();
         RunButton.IsEnabled = false;
-        CancelButton.IsEnabled = true;
+        ChooseFilesButton.IsEnabled = OptionsPanel.IsEnabled = FilesList.IsEnabled = FileToolbar.IsEnabled = false;
+        CancelButton.Visibility = OperationProgress.Visibility = Visibility.Visible;
         OpenFolderButton.Visibility = Visibility.Collapsed;
-        StatusText.Text = "Working…";
+        StatusHeading.Text = "Working on your files…";
+        StatusText.Text = "Processing locally. Your originals will stay unchanged.";
 
         try
         {
@@ -140,22 +223,27 @@ public partial class MainWindow : Window
                 _ => throw new NotSupportedException("The selected operation is not supported.")
             };
 
-            StatusText.Text = $"Completed successfully: {Path.GetFileName(_lastOutput)}";
+            StatusHeading.Text = "Your PDF is ready";
+            StatusText.Text = $"Saved to {_lastOutput}";
             OpenFolderButton.Visibility = Visibility.Visible;
         }
         catch (OperationCanceledException)
         {
+            StatusHeading.Text = "Operation cancelled";
             StatusText.Text = "Operation cancelled. Temporary files were cleaned up.";
         }
-        catch (Exception exception) when (exception is ArgumentException or IOException or InvalidDataException or NotSupportedException or TimeoutException)
+        catch (Exception exception) when (exception is ArgumentException or IOException or InvalidDataException or NotSupportedException or TimeoutException or FormatException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException or System.ComponentModel.Win32Exception)
         {
-            StatusText.Text = "The operation could not be completed.";
-            MessageBox.Show(this, exception.Message, "EasyPDF", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusHeading.Text = "Could not create the PDF";
+            StatusText.Text = exception.Message;
         }
         finally
         {
-            RunButton.IsEnabled = true;
-            CancelButton.IsEnabled = false;
+            _operationCancellation.Dispose();
+            _operationCancellation = null;
+            ChooseFilesButton.IsEnabled = OptionsPanel.IsEnabled = FilesList.IsEnabled = FileToolbar.IsEnabled = true;
+            CancelButton.Visibility = OperationProgress.Visibility = Visibility.Collapsed;
+            UpdateActionControls();
         }
     }
 
@@ -172,7 +260,7 @@ public partial class MainWindow : Window
             }
             else if (Directory.Exists(path) && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0)
             {
-                foreach (var file in Directory.EnumerateFiles(path).Where(SupportedFiles.IsSupported).Take(100))
+                foreach (var file in Directory.EnumerateFiles(path).Where(SupportedFiles.IsSupported).Take(101))
                 {
                     yield return file;
                 }
@@ -192,4 +280,5 @@ public partial class MainWindow : Window
     };
 
     private sealed record ActionItem(string Id, string Label);
+    private sealed record FileItem(string Name, string Folder, string Extension, string FullPath);
 }

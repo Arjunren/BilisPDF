@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <shobjidl_core.h>
 #include <shellapi.h>
+#include <wrl.h>
 
 #include <algorithm>
 #include <atomic>
@@ -49,17 +50,56 @@ std::wstring ToLower(std::wstring value)
     return value;
 }
 
-bool IsSupportedDocument(const std::wstring& path)
+enum class Action { Root, Convert, Merge, Extract, Rotate, Images, Open };
+
+enum class FileKind { Unknown, Document, Pdf, Image };
+
+FileKind GetFileKind(const std::wstring& path)
 {
     const auto separator = path.find_last_of(L'.');
     if (separator == std::wstring::npos)
     {
-        return false;
+        return FileKind::Unknown;
     }
 
     const auto extension = ToLower(path.substr(separator));
-    return extension == L".docx" || extension == L".xlsx" || extension == L".pptx" ||
-        extension == L".txt" || extension == L".rtf" || extension == L".html" || extension == L".htm";
+    if (extension == L".pdf") { return FileKind::Pdf; }
+    if (extension == L".docx" || extension == L".xlsx" || extension == L".pptx" ||
+        extension == L".txt" || extension == L".rtf" || extension == L".html" || extension == L".htm") { return FileKind::Document; }
+    if (extension == L".png" || extension == L".jpg" || extension == L".jpeg" || extension == L".bmp" ||
+        extension == L".tif" || extension == L".tiff" || extension == L".webp") { return FileKind::Image; }
+    return FileKind::Unknown;
+}
+
+bool SupportsAction(Action action, const std::vector<std::wstring>& paths)
+{
+    if (paths.empty() || paths.size() > 100) { return false; }
+    const auto allOfKind = [&](FileKind kind)
+    {
+        return std::ranges::all_of(paths, [kind](const auto& path) { return GetFileKind(path) == kind; });
+    };
+    switch (action)
+    {
+    case Action::Convert: return allOfKind(FileKind::Document);
+    case Action::Merge: return paths.size() > 1 && allOfKind(FileKind::Pdf);
+    case Action::Extract:
+    case Action::Rotate: return paths.size() == 1 && allOfKind(FileKind::Pdf);
+    case Action::Images: return allOfKind(FileKind::Image);
+    default: return std::ranges::all_of(paths, [](const auto& path) { return GetFileKind(path) != FileKind::Unknown; });
+    }
+}
+
+const wchar_t* ActionArgument(Action action)
+{
+    switch (action)
+    {
+    case Action::Convert: return L"convert-to-pdf";
+    case Action::Merge: return L"merge";
+    case Action::Extract: return L"extract-pages";
+    case Action::Rotate: return L"rotate";
+    case Action::Images: return L"images-to-pdf";
+    default: return L"open";
+    }
 }
 
 HRESULT GetSelectedPaths(IShellItemArray* items, std::vector<std::wstring>& paths)
@@ -82,6 +122,13 @@ HRESULT GetSelectedPaths(IShellItemArray* items, std::vector<std::wstring>& path
         IShellItem* item = nullptr;
         RETURN_IF_FAILED(items->GetItemAt(index, &item));
         PWSTR path = nullptr;
+        SFGAOF attributes = SFGAO_FOLDER;
+        const HRESULT attributeResult = item->GetAttributes(SFGAO_FOLDER, &attributes);
+        if (FAILED(attributeResult) || (attributes & SFGAO_FOLDER) != 0)
+        {
+            item->Release();
+            return E_INVALIDARG;
+        }
         const HRESULT result = item->GetDisplayName(SIGDN_FILESYSPATH, &path);
         item->Release();
         if (FAILED(result))
@@ -127,13 +174,13 @@ std::wstring QuoteArgument(const std::wstring& value)
     return result;
 }
 
-HRESULT GetWorkerPath(std::wstring& workerPath)
+HRESULT GetSiblingPath(const wchar_t* filename, std::wstring& workerPath)
 {
     std::vector<wchar_t> modulePath(32768);
     const DWORD length = GetModuleFileNameW(moduleHandle, modulePath.data(), static_cast<DWORD>(modulePath.size()));
     if (length == 0 || length >= modulePath.size())
     {
-        return HRESULT_FROM_WIN32(GetLastError());
+        return HRESULT_FROM_WIN32(length == 0 ? GetLastError() : ERROR_INSUFFICIENT_BUFFER);
     }
 
     workerPath.assign(modulePath.data(), length);
@@ -144,11 +191,7 @@ HRESULT GetWorkerPath(std::wstring& workerPath)
     }
 
     workerPath.resize(separator + 1);
-    workerPath.append(L"EasyPDF.Shell.exe");
-    if (GetFileAttributesW(workerPath.c_str()) == INVALID_FILE_ATTRIBUTES)
-    {
-        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-    }
+    workerPath.append(filename);
 
     return S_OK;
 }
@@ -156,7 +199,7 @@ HRESULT GetWorkerPath(std::wstring& workerPath)
 class ExplorerCommand final : public IExplorerCommand
 {
 public:
-    ExplorerCommand() { ++objectCount; }
+    explicit ExplorerCommand(Action action = Action::Root) : action_(action) { ++objectCount; }
 
     IFACEMETHODIMP QueryInterface(REFIID interfaceId, void** result) override
     {
@@ -190,21 +233,30 @@ public:
 
     IFACEMETHODIMP GetTitle(IShellItemArray*, PWSTR* title) override
     {
-        return DuplicateString(L"Convert to PDF with EasyPDF", title);
+        const wchar_t* label = L"EasyPDF";
+        switch (action_)
+        {
+        case Action::Convert: label = L"Convert to PDF"; break;
+        case Action::Merge: label = L"Merge PDFs..."; break;
+        case Action::Extract: label = L"Extract pages..."; break;
+        case Action::Rotate: label = L"Rotate pages..."; break;
+        case Action::Images: label = L"Combine images to PDF..."; break;
+        case Action::Open: label = L"Open in EasyPDF"; break;
+        default: break;
+        }
+        return DuplicateString(label, title);
     }
 
     IFACEMETHODIMP GetIcon(IShellItemArray*, PWSTR* icon) override
     {
-        if (icon != nullptr)
-        {
-            *icon = nullptr;
-        }
-        return E_NOTIMPL;
+        std::wstring path;
+        RETURN_IF_FAILED(GetSiblingPath(L"EasyPDF.ico", path));
+        return DuplicateString(path.c_str(), icon);
     }
 
     IFACEMETHODIMP GetToolTip(IShellItemArray*, PWSTR* tooltip) override
     {
-        return DuplicateString(L"Create a PDF beside the selected document without opening EasyPDF", tooltip);
+        return DuplicateString(L"Private, offline PDF tools. Originals are kept unchanged.", tooltip);
     }
 
     IFACEMETHODIMP GetCanonicalName(GUID* canonicalName) override
@@ -214,6 +266,7 @@ public:
             return E_POINTER;
         }
         *canonicalName = CLSID_EasyPdfConvert;
+        canonicalName->Data1 += static_cast<unsigned long>(action_);
         return S_OK;
     }
 
@@ -225,8 +278,7 @@ public:
         }
 
         std::vector<std::wstring> paths;
-        if (FAILED(GetSelectedPaths(items, paths)) ||
-            !std::ranges::all_of(paths, [](const std::wstring& path) { return IsSupportedDocument(path); }))
+        if (FAILED(GetSelectedPaths(items, paths)) || !SupportsAction(action_, paths))
         {
             *state = ECS_HIDDEN;
             return S_OK;
@@ -238,22 +290,25 @@ public:
 
     IFACEMETHODIMP Invoke(IShellItemArray* items, IBindCtx*) override
     {
+        if (action_ == Action::Root) { return E_NOTIMPL; }
         std::vector<std::wstring> paths;
         RETURN_IF_FAILED(GetSelectedPaths(items, paths));
-        if (!std::ranges::all_of(paths, [](const std::wstring& path) { return IsSupportedDocument(path); }))
+        if (!SupportsAction(action_, paths))
         {
             return E_INVALIDARG;
         }
 
         std::wstring workerPath;
-        RETURN_IF_FAILED(GetWorkerPath(workerPath));
+        RETURN_IF_FAILED(GetSiblingPath(L"EasyPDF.Shell.exe", workerPath));
 
-        std::wstring commandLine = QuoteArgument(workerPath) + L" convert-to-pdf";
+        std::wstring commandLine = QuoteArgument(workerPath) + L" " + ActionArgument(action_);
         for (const auto& path : paths)
         {
             commandLine.push_back(L' ');
             commandLine.append(QuoteArgument(path));
         }
+
+        if (commandLine.size() >= 32767) { return HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE); }
 
         STARTUPINFOW startupInfo{sizeof(startupInfo)};
         PROCESS_INFORMATION processInfo{};
@@ -275,27 +330,80 @@ public:
         {
             return E_POINTER;
         }
-        *flags = ECF_DEFAULT;
+        *flags = action_ == Action::Root ? ECF_HASSUBCOMMANDS : ECF_DEFAULT;
         return S_OK;
     }
 
-    IFACEMETHODIMP EnumSubCommands(IEnumExplorerCommand** commands) override
-    {
-        if (commands != nullptr)
-        {
-            *commands = nullptr;
-        }
-        return E_NOTIMPL;
-    }
+    IFACEMETHODIMP EnumSubCommands(IEnumExplorerCommand** commands) override;
 
 private:
     ~ExplorerCommand() { --objectCount; }
     std::atomic<ULONG> referenceCount_{1};
+    Action action_;
 };
+
+class CommandEnumerator final : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IEnumExplorerCommand>
+{
+public:
+    CommandEnumerator() { ++objectCount; }
+    ~CommandEnumerator() { --objectCount; }
+
+    IFACEMETHODIMP Next(ULONG requested, IExplorerCommand** commands, ULONG* fetched) override
+    {
+        if (commands == nullptr || (fetched == nullptr && requested != 1)) { return E_POINTER; }
+        if (fetched != nullptr) { *fetched = 0; }
+        ULONG copied = 0;
+        while (copied < requested && position_ < 6)
+        {
+            commands[copied] = new (std::nothrow) ExplorerCommand(static_cast<Action>(position_ + 1));
+            if (commands[copied] == nullptr)
+            {
+                if (fetched != nullptr) { *fetched = copied; }
+                return E_OUTOFMEMORY;
+            }
+            ++copied;
+            ++position_;
+        }
+        if (fetched != nullptr) { *fetched = copied; }
+        return copied == requested ? S_OK : S_FALSE;
+    }
+
+    IFACEMETHODIMP Skip(ULONG count) override
+    {
+        const auto skipped = std::min(count, 6UL - position_);
+        position_ += skipped;
+        return skipped == count ? S_OK : S_FALSE;
+    }
+
+    IFACEMETHODIMP Reset() override { position_ = 0; return S_OK; }
+
+    IFACEMETHODIMP Clone(IEnumExplorerCommand** clone) override
+    {
+        if (clone == nullptr) { return E_POINTER; }
+        *clone = nullptr;
+        auto copy = Microsoft::WRL::Make<CommandEnumerator>();
+        if (!copy) { return E_OUTOFMEMORY; }
+        copy->position_ = position_;
+        return copy.CopyTo(clone);
+    }
+
+private:
+    ULONG position_ = 0;
+};
+
+HRESULT ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** commands)
+{
+    if (commands == nullptr) { return E_POINTER; }
+    *commands = nullptr;
+    if (action_ != Action::Root) { return E_NOTIMPL; }
+    const auto enumerator = Microsoft::WRL::Make<CommandEnumerator>();
+    return enumerator ? enumerator.CopyTo(commands) : E_OUTOFMEMORY;
+}
 
 class ClassFactory final : public IClassFactory
 {
 public:
+    ClassFactory() { ++objectCount; }
     IFACEMETHODIMP QueryInterface(REFIID interfaceId, void** result) override
     {
         if (result == nullptr)
@@ -351,6 +459,7 @@ public:
     }
 
 private:
+    ~ClassFactory() { --objectCount; }
     std::atomic<ULONG> referenceCount_{1};
 };
 }

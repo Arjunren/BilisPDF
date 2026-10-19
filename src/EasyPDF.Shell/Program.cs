@@ -102,9 +102,11 @@ static int LaunchDesktop(string action, IReadOnlyList<string> paths)
 
 static void ShowNotification(string title, string message, ToolTipIcon icon)
 {
+    var iconPath = Path.Combine(AppContext.BaseDirectory, "EasyPDF.ico");
+    using var appIcon = File.Exists(iconPath) ? new Icon(iconPath) : (Icon)SystemIcons.Application.Clone();
     using var notification = new NotifyIcon
     {
-        Icon = SystemIcons.Application,
+        Icon = appIcon,
         Text = "EasyPDF",
         Visible = true
     };

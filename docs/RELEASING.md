@@ -4,8 +4,10 @@
 2. Run formatting, Release build, all tests, `dotnet list package --vulnerable --include-transitive`, and representative manual conversions.
 3. Publish self-contained `win-x64` CLI, Desktop, and Shell payloads.
 4. Build the MSI and sparse shell package, then verify install, mandatory terms acceptance, both Explorer menu paths, direct background conversion, shortcuts, repair, upgrade, and uninstall on clean Windows 10 and Windows 11 virtual machines.
-5. Sign EXEs/DLLs, the sparse MSIX shell package, and the MSI with a trusted Authenticode certificate. Use `signtool` with SHA-256 and an RFC 3161 timestamp. A build with `EASYPDF_SIGNING_CERT_PATH` includes the signed sparse package and enables MSI registration/unregistration automatically; unsigned builds omit those actions.
+5. Sign EXEs/DLLs, the sparse MSIX shell package, and the MSI with a trusted Authenticode certificate. Use `signtool` with SHA-256 and an RFC 3161 timestamp. A build with `EASYPDF_SIGNING_CERT_PATH` includes the signed sparse package and enables MSI registration automatically. Unsigned MSI builds register the installed manifest only on machines with Developer Mode already enabled; other machines get the classic menu only. Do not publish an unsigned build as having an automatically available modern menu.
 6. Generate an SPDX SBOM with Microsoft's SBOM tool or an equivalent maintained generator.
 7. Create checksums and publish release notes and artifacts.
 
 Signing certificates and passwords must be CI secrets or held by a hardware-backed signing service. They must never be committed, passed on ordinary command lines, or printed in logs.
+
+For local development, `installer/Install-Development.ps1` copies the built payload to `%LOCALAPPDATA%\Programs\EasyPDF` and registers the manifest there. Never register a manifest from disposable build output. Verify `Get-AppxPackage -Name Arjunren.EasyPDF.Shell | Get-AppxPackageManifest` succeeds after registration and after deleting build artifacts.

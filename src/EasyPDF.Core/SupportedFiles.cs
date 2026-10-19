@@ -49,7 +49,7 @@ public static class SupportedFiles
         if (kinds.All(kind => kind == EasyFileKind.Pdf))
         {
             return kinds.Length > 1
-                ? ["merge", "rotate"]
+                ? ["merge"]
                 : ["split", "extract-pages", "rotate"];
         }
 

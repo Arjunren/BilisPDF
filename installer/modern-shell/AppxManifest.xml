@@ -11,7 +11,7 @@
   <Identity
     Name="Arjunren.EasyPDF.Shell"
     Publisher="CN=Arjunren Von"
-    Version="0.2.0.0"
+    Version="0.3.0.0"
     ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>EasyPDF</DisplayName>
@@ -51,7 +51,7 @@
           <desktop4:FileExplorerContextMenus>
             <desktop5:ItemType Type="*">
               <desktop5:Verb
-                Id="ConvertToPdfWithEasyPDF"
+                Id="EasyPDFTools"
                 Clsid="AC712EE0-68E1-42AE-A15A-E841177E9829" />
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>

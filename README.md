@@ -4,15 +4,17 @@ EasyPDF is a free, open-source, offline-first Windows utility for common PDF tas
 
 Copyright and project credit: **Arjunren Von** (`Arjunren`). Licensed under the MIT License.
 
-> Status: Phase 1 foundation. The CLI, desktop drag-and-drop shell, guarded local document conversion, PDF merge/split/extract/rotate, images-to-PDF, tests, MSI authoring, and native Windows 11 Explorer command are implemented. Production releases must code-sign and register the included sparse shell package; development registration is supported on machines with Developer Mode enabled.
+> Status: 0.3 development build. Includes a native Windows 11 EasyPDF submenu, a shared app icon, and a refreshed desktop workflow. Public releases require a trusted signing certificate for the modern Explorer menu. Unsigned builds support modern-menu registration only on machines with Developer Mode already enabled; otherwise use **Show more options → EasyPDF**.
 
 ## Features
 
-- Right-click a supported document and choose **Convert to PDF with EasyPDF** in the Windows 11 menu; conversion runs in the background without opening the desktop app.
+- Right-click supported files and choose **EasyPDF** in the Windows 11 menu, alongside apps such as WinRAR. The submenu shows actions for the current selection: document conversion, PDF merge/extract/rotate, combine images, or open in EasyPDF. Document conversion runs in the background.
 - Convert DOCX, XLSX, and PPTX through local LibreOffice, or through an already-installed Microsoft Office application when LibreOffice is unavailable.
 - Merge PDFs, extract/split page ranges, and rotate pages.
 - Combine PNG, JPEG, BMP, TIFF, and WebP images into a PDF.
 - Use the same processing engine from the CLI and desktop app.
+- Add files over several selections, remove or reorder them, and see only the controls needed for the selected operation. Progress, actionable errors, and the output location appear in the app.
+- Consistent icon in Explorer, the app window, executable, shortcuts, package logos, and installed-app listing.
 - Safe output naming: existing files are not overwritten by default.
 - No accounts, ads, telemetry, subscriptions, credits, or cloud uploads.
 - Local history is disabled by default.
@@ -52,13 +54,19 @@ Publish the app payload before building the MSI:
 
 The installer displays the EasyPDF terms and requires acceptance before installation. It registers only EasyPDF verbs; it does not take over the system PDF association.
 
-For a local Windows 11 shell-extension test on a machine with Developer Mode enabled:
+For a persistent local Windows 11 development installation on a machine with Developer Mode already enabled, build the payload, then run:
 
 ```powershell
-./installer/modern-shell/Register-DevelopmentPackage.ps1 -ExternalLocation ./installer/payload
+./installer/Install-Development.ps1
 ```
 
-The modern menu uses a sparse package because Windows 11 requires package identity for `IExplorerCommand`. When `EASYPDF_SIGNING_CERT_PATH` is set, the build signs the shell package and enables the MSI install/uninstall registration actions automatically. Set the certificate path and `EASYPDF_SIGNING_CERT_PASSWORD` only in the build environment; certificate files and passwords are ignored by Git and must never be committed. Unsigned builds deliberately omit automatic package registration.
+This installs the development build in `%LOCALAPPDATA%\Programs\EasyPDF`, registers its shell extension for the current user, and updates that user's desktop and Start menu shortcuts. Close EasyPDF before updating. The existing machine-wide MSI installation is separate and is not upgraded by this script.
+
+To repair a development registration from an installed payload, run its `Register-DevelopmentPackage.ps1`. It validates the payload and registers the manifest **beside the installed binaries**, not in `artifacts` or another temporary build folder. Keep that installation folder in place. Close and reopen Explorer windows after repair; if Windows still caches an older extension, sign out and back in.
+
+The modern menu uses a sparse package because Windows 11 requires package identity for `IExplorerCommand`. With `EASYPDF_SIGNING_CERT_PATH` set, the build signs the shell package and the MSI registers it automatically. Without signing, the MSI registers the development manifest only when Developer Mode is already enabled. It does not change that Windows setting. Set the certificate path and `EASYPDF_SIGNING_CERT_PASSWORD` only in the build environment; certificate files and passwords must never be committed.
+
+The native submenu has an assert-based self-check in `tests/native/ShellExtensionTests.vcxproj`; build it with Visual Studio C++ MSBuild (`Release|x64`) and run `artifacts/native-tests/ShellExtensionTests.exe`. CI runs it along with the .NET and desktop workflow tests.
 
 ## Architecture
 

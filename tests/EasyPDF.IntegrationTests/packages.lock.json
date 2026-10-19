@@ -126,12 +126,25 @@
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
-      "System.Security.Cryptography.Pkcs": {
-        "type": "Transitive",
-        "resolved": "8.0.1",
-        "contentHash": "CoCRHFym33aUSf/NtWSVSZa99dkd0Hm7OCZUxORBjRB16LNhIEOf8THPqzIYlvKM0nNDAPTRBa1FxEECrgaxxA=="
+      "easypdf.converters": {
+        "type": "Project",
+        "dependencies": {
+          "EasyPDF.Core": "[1.0.0, )"
+        }
       },
       "easypdf.core": {
+        "type": "Project"
+      },
+      "easypdf.desktop": {
+        "type": "Project",
+        "dependencies": {
+          "EasyPDF.Converters": "[1.0.0, )",
+          "EasyPDF.Core": "[1.0.0, )",
+          "EasyPDF.Infrastructure": "[1.0.0, )",
+          "EasyPDF.Pdf": "[1.0.0, )"
+        }
+      },
+      "easypdf.infrastructure": {
         "type": "Project"
       },
       "easypdf.pdf": {
@@ -147,8 +160,7 @@
         "resolved": "6.2.4",
         "contentHash": "uFISTR77hAJP8g7B9VX3yg38+9GiblcO3eEjkI9cQaPodE/wElqbvpuZNmo9exIW9aZnYFW51z7zjizqt/aEtA==",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.3",
-          "System.Security.Cryptography.Pkcs": "8.0.1"
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.3"
         }
       }
     }

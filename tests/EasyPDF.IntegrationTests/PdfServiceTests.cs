@@ -1,3 +1,4 @@
+using System.IO;
 using EasyPDF.Pdf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PdfSharp.Pdf;

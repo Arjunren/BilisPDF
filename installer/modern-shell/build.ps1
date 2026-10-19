@@ -23,47 +23,17 @@ if ($LASTEXITCODE -ne 0) { throw 'Building the native Explorer command failed.' 
 
 Copy-Item -LiteralPath $nativeOutput -Destination $ExternalPayload -Force
 
-if (Test-Path -LiteralPath $layout) {
-    Remove-Item -LiteralPath $layout -Recurse -Force
-}
 New-Item -ItemType Directory -Path $layout -Force | Out-Null
 $assets = Join-Path $ExternalPayload 'Assets'
-if (Test-Path -LiteralPath $assets) {
-    Remove-Item -LiteralPath $assets -Recurse -Force
-}
 New-Item -ItemType Directory -Path $assets -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'AppxManifest.xml') -Destination $layout
-
-Add-Type -AssemblyName System.Drawing
-foreach ($asset in @(
-    @{ Name = 'StoreLogo.png'; Size = 50 },
-    @{ Name = 'Square44x44Logo.png'; Size = 44 },
-    @{ Name = 'Square150x150Logo.png'; Size = 150 }
-)) {
-    $bitmap = [System.Drawing.Bitmap]::new($asset.Size, $asset.Size)
-    $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-    try {
-        $graphics.Clear([System.Drawing.Color]::FromArgb(19, 111, 99))
-        $fontSize = [Math]::Max(10, [int]($asset.Size * 0.34))
-        $font = [System.Drawing.Font]::new('Segoe UI', $fontSize, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-        try {
-            $format = [System.Drawing.StringFormat]::new()
-            $format.Alignment = [System.Drawing.StringAlignment]::Center
-            $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-            $brush = [System.Drawing.Brushes]::White
-            $graphics.DrawString('PDF', $font, $brush, [System.Drawing.RectangleF]::new(0, 0, $asset.Size, $asset.Size), $format)
-        }
-        finally {
-            $font.Dispose()
-        }
-        $bitmap.Save((Join-Path $assets $asset.Name), [System.Drawing.Imaging.ImageFormat]::Png)
-    }
-    finally {
-        $graphics.Dispose()
-        $bitmap.Dispose()
-    }
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'AppxManifest.xml') -Destination $layout -Force
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'AppxManifest.xml') -Destination $ExternalPayload -Force
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Register-DevelopmentPackage.ps1') -Destination $ExternalPayload -Force
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'assets\EasyPDF.ico') -Destination $ExternalPayload -Force
+foreach ($name in @('StoreLogo.png', 'Square44x44Logo.png', 'Square150x150Logo.png')) {
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot "assets\$name") -Destination $assets -Force
 }
-
+Copy-Item -LiteralPath $assets -Destination $layout -Recurse -Force
 $makeAppx = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter makeappx.exe -ErrorAction Stop |
     Where-Object FullName -Match '\\x64\\makeappx.exe$' |
     Sort-Object FullName -Descending |

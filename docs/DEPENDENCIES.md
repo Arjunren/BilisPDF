@@ -4,6 +4,7 @@
 |---|---|---|---|---|
 | .NET | 10 LTS | MIT and component notices | Runtime and WPF | Publish self-contained release payloads; retain Microsoft notices. |
 | PDFsharp GDI | 6.2.4, NuGet.org | MIT | Create, merge, split, extract, and rotate PDFs | Included. Pinned centrally. |
+| System.Security.Cryptography.Pkcs | 8.0.2, NuGet.org | MIT | Transitive PDFsharp dependency on portable targets | Centrally pinned to Microsoft's patched version for CVE-2026-70162 and CVE-2026-84008. |
 | LibreOffice | User-installed supported release | MPL-2.0 plus bundled third-party notices | Local DOCX/XLSX/PPTX conversion | Detected, not bundled in the MVP MSI. Bundling requires the complete LibreOffice license set. |
 | Microsoft Office | Optional user-installed application | Commercial, separately licensed by the user | Local fallback conversion through Windows COM automation | Detected, never bundled or redistributed; EasyPDF adds no Office binary dependency. |
 | WiX Toolset SDK/UI | 5.0.2, build-time only | Microsoft Reciprocal License | Build MSI and license UI | Not shipped as an application runtime dependency. Version 5 is pinned because later releases require separate OSMF EULA acceptance by each builder. |

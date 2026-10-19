@@ -43,11 +43,21 @@ jobs:
         shell: pwsh
         run: ./installer/build.ps1 -Configuration Release
 
+      - name: Test native Explorer commands
+        shell: pwsh
+        run: |
+          $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+          if (-not $msbuild) { throw 'C++ MSBuild was not found.' }
+          & $msbuild tests/native/ShellExtensionTests.vcxproj /p:Configuration=Release /p:Platform=x64 /m
+          if ($LASTEXITCODE -ne 0) { throw 'Native test build failed.' }
+          & ./artifacts/native-tests/ShellExtensionTests.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Native Explorer checks failed.' }
+
       - name: Upload installer
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: EasyPDF-windows-x64
           path: |
-            installer/bin/Release/*.msi
+            installer/bin/x64/Release/*.msi
             THIRD-PARTY-NOTICES.md
           if-no-files-found: error

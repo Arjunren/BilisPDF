@@ -10,6 +10,7 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $payloadDirectory = Join-Path $PSScriptRoot 'payload'
 
 if (Test-Path -LiteralPath $payloadDirectory) {
+    if ((Resolve-Path -LiteralPath $payloadDirectory).Path -ne [IO.Path]::GetFullPath((Join-Path $repositoryRoot 'installer\payload'))) { throw 'Unexpected payload directory.' }
     Remove-Item -LiteralPath $payloadDirectory -Recurse -Force
 }
 New-Item -ItemType Directory -Path $payloadDirectory | Out-Null
@@ -28,7 +29,6 @@ foreach ($project in $projects) {
 
 $shellPackage = Join-Path $PSScriptRoot "bin\x64\$Configuration\EasyPDF.ShellPackage.msix"
 & (Join-Path $PSScriptRoot 'modern-shell\build.ps1') -Configuration $Configuration -ExternalPayload $payloadDirectory -PackageOutput $shellPackage
-if ($LASTEXITCODE -ne 0) { throw 'Building the Windows 11 Explorer package failed.' }
 
 $registerModernShell = 'false'
 if ($env:EASYPDF_SIGNING_CERT_PATH) {
@@ -42,3 +42,6 @@ Copy-Item -LiteralPath (Join-Path $repositoryRoot 'THIRD-PARTY-NOTICES.md') -Des
 
 dotnet build (Join-Path $PSScriptRoot 'EasyPDF.Installer.wixproj') -c $Configuration -p:RegisterModernShell=$registerModernShell
 if ($LASTEXITCODE -ne 0) { throw 'Building the installer failed.' }
+if ($registerModernShell -eq 'false') {
+    Write-Warning 'Unsigned build: the Windows 11 menu requires Developer Mode. Public releases must sign the shell package; the classic menu remains available on other machines.'
+}
