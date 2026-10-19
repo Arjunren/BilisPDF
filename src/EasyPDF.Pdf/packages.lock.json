@@ -4,9 +4,9 @@
     "net10.0-windows7.0": {
       "PDFsharp-GDI": {
         "type": "Direct",
-        "requested": "[6.2.4, )",
-        "resolved": "6.2.4",
-        "contentHash": "uFISTR77hAJP8g7B9VX3yg38+9GiblcO3eEjkI9cQaPodE/wElqbvpuZNmo9exIW9aZnYFW51z7zjizqt/aEtA==",
+        "requested": "[6.5.0, )",
+        "resolved": "6.5.0",
+        "contentHash": "fll/RZ8bMHR37ZnenrR+YtNpueQBP2gbaUPAwfZmToLdn7V/qjwRdfTeOCtu3WQsh+LHseQVo+Kqb3a2HsY4Yw==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "8.0.3"
         }
