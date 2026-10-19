@@ -35,11 +35,11 @@ foreach ($size in @(16, 20, 24, 32, 40, 44, 48, 50, 64, 128, 150, 256)) {
     $images[$size] = $stream.ToArray()
     $stream.Dispose()
 }
-foreach ($asset in @(@{Name='EasyPDF.png'; Size=256}, @{Name='StoreLogo.png'; Size=50}, @{Name='Square44x44Logo.png'; Size=44}, @{Name='Square150x150Logo.png'; Size=150})) {
+foreach ($asset in @(@{Name='BilisPDF.png'; Size=256}, @{Name='StoreLogo.png'; Size=50}, @{Name='Square44x44Logo.png'; Size=44}, @{Name='Square150x150Logo.png'; Size=150})) {
     [IO.File]::WriteAllBytes((Join-Path $PSScriptRoot $asset.Name), $images[$asset.Size])
 }
 $sizes = @(16, 20, 24, 32, 40, 48, 64, 128, 256)
-$stream = [IO.File]::Create((Join-Path $PSScriptRoot 'EasyPDF.ico'))
+$stream = [IO.File]::Create((Join-Path $PSScriptRoot 'BilisPDF.ico'))
 $writer = [IO.BinaryWriter]::new($stream)
 try {
     $writer.Write([uint16]0); $writer.Write([uint16]1); $writer.Write([uint16]$sizes.Count)

@@ -1,0 +1,28 @@
+#include <windows.h>
+
+101 ICON "../../assets/BilisPDF.ico"
+1 VERSIONINFO
+ FILEVERSION 0,4,0,0
+ PRODUCTVERSION 0,4,0,0
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "CompanyName", "Arjunren Von\0"
+      VALUE "FileDescription", "BilisPDF Explorer commands\0"
+      VALUE "FileVersion", "0.4.0.0\0"
+      VALUE "InternalName", "BilisPDF.ShellExtension\0"
+      VALUE "LegalCopyright", "Copyright (c) 2026 Arjunren Von\0"
+      VALUE "OriginalFilename", "BilisPDF.ShellExtension.dll\0"
+      VALUE "ProductName", "BilisPDF\0"
+      VALUE "ProductVersion", "0.4.0\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

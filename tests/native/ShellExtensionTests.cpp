@@ -1,5 +1,5 @@
 // Exercise the actual command implementation without registering it in Explorer.
-#include "../../src/EasyPDF.ShellExtension/ShellExtension.cpp"
+#include "../../src/BilisPDF.ShellExtension/ShellExtension.cpp"
 #include <iostream>
 #include <cstdlib>
 

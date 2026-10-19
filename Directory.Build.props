@@ -7,10 +7,14 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <Authors>Arjunren Von</Authors>
+    <Product>BilisPDF</Product>
+    <Description>Private, offline PDF tools for Windows</Description>
+    <Version>0.4.0</Version>
     <Company>Arjunren Von</Company>
     <Copyright>Copyright (c) 2026 Arjunren Von</Copyright>
-    <RepositoryUrl>https://github.com/Arjunren/EasyPDF</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Arjunren/BilisPDF</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetLockFilePath Condition="'$(RuntimeIdentifier)' != ''">$(MSBuildProjectDirectory)\obj\packages.$(RuntimeIdentifier).lock.json</NuGetLockFilePath>
   </PropertyGroup>
 </Project>

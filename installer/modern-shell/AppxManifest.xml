@@ -8,13 +8,14 @@
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap uap10 com desktop4 desktop5 rescap">
+  <!-- Retain the EasyPDF identity so Windows upgrades the existing registration. -->
   <Identity
     Name="Arjunren.EasyPDF.Shell"
     Publisher="CN=Arjunren Von"
-    Version="0.3.0.0"
+    Version="0.4.0.0"
     ProcessorArchitecture="x64" />
   <Properties>
-    <DisplayName>EasyPDF</DisplayName>
+    <DisplayName>BilisPDF</DisplayName>
     <PublisherDisplayName>Arjunren Von</PublisherDisplayName>
     <Description>Private, offline PDF tools</Description>
     <Logo>Assets\StoreLogo.png</Logo>
@@ -25,13 +26,13 @@
   </Dependencies>
   <Applications>
     <Application
-      Id="EasyPDFShell"
-      Executable="EasyPDF.Shell.exe"
+      Id="BilisPDFShell"
+      Executable="BilisPDF.Shell.exe"
       uap10:TrustLevel="mediumIL"
       uap10:RuntimeBehavior="win32App">
       <uap:VisualElements
         AppListEntry="none"
-        DisplayName="EasyPDF"
+        DisplayName="BilisPDF"
         Description="Private, offline PDF tools"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
@@ -39,10 +40,10 @@
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:SurrogateServer DisplayName="EasyPDF Explorer commands">
+            <com:SurrogateServer DisplayName="BilisPDF Explorer commands">
               <com:Class
                 Id="AC712EE0-68E1-42AE-A15A-E841177E9829"
-                Path="EasyPDF.ShellExtension.dll"
+                Path="BilisPDF.ShellExtension.dll"
                 ThreadingModel="STA" />
             </com:SurrogateServer>
           </com:ComServer>
@@ -51,7 +52,7 @@
           <desktop4:FileExplorerContextMenus>
             <desktop5:ItemType Type="*">
               <desktop5:Verb
-                Id="EasyPDFTools"
+                Id="BilisPDFTools"
                 Clsid="AC712EE0-68E1-42AE-A15A-E841177E9829" />
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>

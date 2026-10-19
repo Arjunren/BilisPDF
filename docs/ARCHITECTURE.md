@@ -2,16 +2,16 @@
 
 ## Decision summary
 
-EasyPDF targets .NET 10 LTS and Windows 10/11 x64. WPF is used for a small, fast desktop UI; processing stays in reusable libraries and out-of-process workers. A native shell entry launches the background worker and returns immediately. No document parser, Office automation object, or .NET runtime is loaded in Explorer.
+BilisPDF targets .NET 10 LTS and Windows 10/11 x64. WPF is used for a small, fast desktop UI; processing stays in reusable libraries and out-of-process workers. A native shell entry launches the background worker and returns immediately. No document parser, Office automation object, or .NET runtime is loaded in Explorer.
 
 ```text
 Explorer / WPF / CLI
         |
         v
- EasyPDF.Core contracts and validation
+ BilisPDF.Core contracts and validation
     |                         |
     v                         v
-EasyPDF.Converters       EasyPDF.Pdf
+BilisPDF.Converters       BilisPDF.Pdf
  (local office engine)   (PDFsharp)
     \                         /
      v                       v
@@ -24,9 +24,9 @@ The source is split by responsibility rather than feature microservices. `Core` 
 
 ## Explorer design
 
-The MSI registers fallback verbs only for supported extensions under `SystemFileAssociations`; it does not change default applications. `EasyPDF.Shell.exe` validates the verb and performs document conversion directly in a separate process. Operations that need interactive options still open `EasyPDF.Desktop.exe`. Uninstall removes every classic registration.
+The MSI registers fallback verbs only for supported extensions under `SystemFileAssociations`; it does not change default applications. `BilisPDF.Shell.exe` validates the verb and performs document conversion directly in a separate process. Operations that need interactive options still open `BilisPDF.Desktop.exe`. Uninstall removes every classic registration.
 
-Windows 11's first-tier context menu is implemented by `EasyPDF.ShellExtension.dll`, a native `IExplorerCommand` COM server registered through a sparse MSIX identity package. Its menu-building methods only validate selection metadata; `Invoke` starts `EasyPDF.Shell.exe` and returns. Production releases must sign and register the sparse package. The classic **Show more options** commands remain as a compatibility fallback.
+Windows 11's first-tier context menu is implemented by `BilisPDF.ShellExtension.dll`, a native `IExplorerCommand` COM server registered through a sparse MSIX identity package. Its menu-building methods only validate selection metadata; `Invoke` starts `BilisPDF.Shell.exe` and returns. Production releases must sign and register the sparse package. The classic **Show more options** commands remain as a compatibility fallback.
 
 ## Phase 1 implementation sequence
 

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BilisPDF.Core/BilisPDF.Core.csproj" />
+    <Project Path="src/BilisPDF.Pdf/BilisPDF.Pdf.csproj" />
+    <Project Path="src/BilisPDF.Converters/BilisPDF.Converters.csproj" />
+    <Project Path="src/BilisPDF.Infrastructure/BilisPDF.Infrastructure.csproj" />
+    <Project Path="src/BilisPDF.Cli/BilisPDF.Cli.csproj" />
+    <Project Path="src/BilisPDF.Desktop/BilisPDF.Desktop.csproj" />
+    <Project Path="src/BilisPDF.Shell/BilisPDF.Shell.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BilisPDF.Core.Tests/BilisPDF.Core.Tests.csproj" />
+    <Project Path="tests/BilisPDF.IntegrationTests/BilisPDF.IntegrationTests.csproj" />
+    <Project Path="tests/BilisPDF.SecurityTests/BilisPDF.SecurityTests.csproj" />
+  </Folder>
+</Solution>

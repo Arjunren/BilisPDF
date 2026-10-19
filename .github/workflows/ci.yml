@@ -21,21 +21,21 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore EasyPDF.slnx --locked-mode
+        run: dotnet restore BilisPDF.slnx --locked-mode
 
       - name: Verify formatting
-        run: dotnet format EasyPDF.slnx --verify-no-changes --no-restore
+        run: dotnet format BilisPDF.slnx --verify-no-changes --no-restore
 
       - name: Build
-        run: dotnet build EasyPDF.slnx -c Release --no-restore
+        run: dotnet build BilisPDF.slnx -c Release --no-restore
 
       - name: Test
-        run: dotnet test EasyPDF.slnx -c Release --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test BilisPDF.slnx -c Release --no-build --collect:"XPlat Code Coverage"
 
       - name: Audit dependencies
         shell: pwsh
         run: |
-          $report = dotnet list EasyPDF.slnx package --vulnerable --include-transitive
+          $report = dotnet list BilisPDF.slnx package --vulnerable --include-transitive
           $report | Write-Output
           if ($report -match 'has the following vulnerable packages') { throw 'Vulnerable packages detected.' }
 
@@ -53,11 +53,17 @@ jobs:
           & ./artifacts/native-tests/ShellExtensionTests.exe
           if ($LASTEXITCODE -ne 0) { throw 'Native Explorer checks failed.' }
 
+      - name: Verify release signing guards
+        shell: pwsh
+        run: ./tests/Test-ReleaseSigning.ps1 -UnsignedBinary ./installer/payload/BilisPDF.Desktop.exe
+
       - name: Upload installer
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: EasyPDF-windows-x64
+          name: BilisPDF-windows-x64
           path: |
             installer/bin/x64/Release/*.msi
+            installer/bin/x64/Release/*.msix
+            installer/bin/x64/Release/SHA256SUMS.txt
             THIRD-PARTY-NOTICES.md
           if-no-files-found: error

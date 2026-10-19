@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>BilisPDF.Desktop</AssemblyName>
+    <ApplicationIcon>..\..\assets\BilisPDF.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="..\..\assets\BilisPDF.ico" Link="Assets\BilisPDF.ico" />
+    <Resource Include="..\..\assets\BilisPDF.png" Link="Assets\BilisPDF.png" />
+    <ProjectReference Include="..\BilisPDF.Core\BilisPDF.Core.csproj" />
+    <ProjectReference Include="..\BilisPDF.Pdf\BilisPDF.Pdf.csproj" />
+    <ProjectReference Include="..\BilisPDF.Converters\BilisPDF.Converters.csproj" />
+    <ProjectReference Include="..\BilisPDF.Infrastructure\BilisPDF.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <OutputName>BilisPDF-Setup</OutputName>
+    <OutputType>Package</OutputType>
+    <Platform>x64</Platform>
+    <Cultures>en-US</Cultures>
+    <RegisterModernShell Condition="'$(RegisterModernShell)' == ''">false</RegisterModernShell>
+    <DefineConstants>PayloadDir=$(MSBuildThisFileDirectory)payload;RegisterModernShell=$(RegisterModernShell)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" />
+  </ItemGroup>
+</Project>

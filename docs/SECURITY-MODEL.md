@@ -2,7 +2,7 @@
 
 ## Trust boundaries
 
-All selected files, filenames, PDFs, Office ZIP containers, images, settings, and converter output are untrusted. Explorer is a high-stability boundary: EasyPDF performs no document parsing there. LibreOffice is a separate child process operating on a private temporary profile. The optional Microsoft Office fallback runs invisibly on a dedicated STA thread in the out-of-process worker, with macros disabled and sources opened read-only.
+All selected files, filenames, PDFs, Office ZIP containers, images, settings, and converter output are untrusted. Explorer is a high-stability boundary: BilisPDF performs no document parsing there. LibreOffice is a separate child process operating on a private temporary profile. The optional Microsoft Office fallback runs invisibly on a dedicated STA thread in the out-of-process worker, with macros disabled and sources opened read-only.
 
 ## Controls
 
