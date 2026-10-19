@@ -1,0 +1,12 @@
+output/
+logo.png
+voice-raw.wav
+voice.wav
+voice.mp3
+music.wav
+music.mp3
+motion.mp4
+BilisPDF-Commercial-30s.mp4
+storyboard.jpg
+transcript.json
+__pycache__/
