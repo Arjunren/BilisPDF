@@ -25,11 +25,11 @@
       },
       "MSTest.TestFramework": {
         "type": "Direct",
-        "requested": "[4.0.1, )",
-        "resolved": "4.0.1",
-        "contentHash": "uXIBT47UAQcga6sfflqFvo1rkmHQESIhDvtusMWqhOef9nZhJF8UslfOZoIBV8q6uv9WOehSZ5fBBB4SNZWnBg==",
+        "requested": "[4.5.3, )",
+        "resolved": "4.5.3",
+        "contentHash": "i3Ghn0z+fjW65MJ+7De1j38SxdqiN17IEFZFsLOsxoMsf/TLgMoU1v9WiXJHc0Erwd3Vf/dON6a2ArAEs4P1xQ==",
         "dependencies": {
-          "MSTest.Analyzers": "4.0.1"
+          "MSTest.Analyzers": "4.5.3"
         }
       },
       "Microsoft.ApplicationInsights": {
@@ -118,8 +118,8 @@
       },
       "MSTest.Analyzers": {
         "type": "Transitive",
-        "resolved": "4.0.1",
-        "contentHash": "SFYBSnZ2O5n+JZ6dYGig0rV8maAYYSAk8SpYbAvCl8XqJ2H1+Z6Su9AI4llW+RMJtmDDRUZ3JgaGih/MMgQkOw=="
+        "resolved": "4.5.3",
+        "contentHash": "2d9suQBg9VeZ9pAStOXLz6l7Co9olPnrb6PpMBadiOZ6ggQpDkKxYXV1Z86Z/7xRij/3/QnzmBEUJ5YgtR6WeQ=="
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
